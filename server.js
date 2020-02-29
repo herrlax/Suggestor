@@ -3,7 +3,7 @@
  * Modified by Mikael Malmqvist
  */
 
-const env = require("./environment");
+require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const request = require("request");
@@ -11,16 +11,16 @@ const querystring = require("querystring");
 const cookieParser = require("cookie-parser");
 const url = require("url");
 
-const client_id = env.config.clientId;
-const client_secret = env.config.clientSecret;
-const redirect_uri = env.config.redirectUri;
+const client_id = process.env.CLIENT_ID;
+const client_secret = process.env.CLIENT_SECRET;
+const redirect_uri = process.env.REDIRECT_URI;
 
 /**
  * Generates a random string containing numbers and letters
  * @param  {number} length The length of the string
  * @return {string} The generated string
  */
-const generateRandomString = function(length) {
+const generateRandomString = length => {
   let text = "";
   const possible =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -375,4 +375,4 @@ app.get("*", (req, res) => {
 });
 
 console.log("Listening on 8888");
-app.listen(env.port || 8888);
+app.listen(8888);
