@@ -16,11 +16,7 @@ const UserContext = createContext<State | undefined>(undefined);
 
 const UserProvider: React.FC = ({ children }) => {
   const history = useHistory();
-  const [user, setUser] = useState<User>({
-    token: "",
-    refreshToken: "",
-    userId: ""
-  });
+  const [user, setUser] = useState<User>({});
 
   useEffect(() => {
     const token = Cookies.get("token");
