@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { useHistory } from "react-router-dom";
 import * as Cookies from "es-cookie";
+import PropTypes from "prop-types";
 
 type User = {
   token?: string;
@@ -32,7 +33,7 @@ const UserProvider: React.FC = ({ children }) => {
       refreshToken: refreshToken,
       userId: userId
     });
-  }, []);
+  }, [history]);
 
   return (
     <UserContext.Provider value={{ data: user }}>
@@ -49,6 +50,10 @@ const useUser = () => {
   }
 
   return context;
+};
+
+UserProvider.propTypes = {
+  children: PropTypes.node
 };
 
 export { UserProvider, useUser };
