@@ -3,9 +3,9 @@ import { useHistory } from "react-router-dom";
 import * as Cookies from "es-cookie";
 
 type User = {
-  token: string;
-  refreshToken: string;
-  userId: string;
+  token?: string;
+  refreshToken?: string;
+  userId?: string;
 };
 
 type State = {
@@ -32,9 +32,9 @@ const UserProvider: React.FC = ({ children }) => {
     }
 
     setUser({
-      token: token || "",
-      refreshToken: refreshToken || "",
-      userId: userId || ""
+      token: token,
+      refreshToken: refreshToken,
+      userId: userId
     });
   }, []);
 
