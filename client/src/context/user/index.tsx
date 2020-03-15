@@ -1,52 +1,227 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, {
+  createContext,
+  useEffect,
+  useContext,
+  useMemo,
+  useReducer
+} from "react";
 import { useHistory } from "react-router-dom";
 import * as Cookies from "es-cookie";
 import PropTypes from "prop-types";
+import { useHttpClient } from "../../utils/httpClient";
 
-type User = {
+type UserData = {
   token?: string;
   refreshToken?: string;
   userId?: string;
 };
 
 type State = {
-  data: User;
+  data: UserData;
+  getInitialUserData: {
+    isLoading: boolean;
+    isSuccess: boolean;
+    isErrored: boolean;
+  };
+  getRefreshedAccessToken: {
+    isLoading: boolean;
+    isSuccess: boolean;
+    isErrored: boolean;
+  };
 };
 
-const UserContext = createContext<State | undefined>(undefined);
+const initialState: State = {
+  data: {},
+  getInitialUserData: {
+    isLoading: false,
+    isSuccess: false,
+    isErrored: false
+  },
+  getRefreshedAccessToken: {
+    isLoading: false,
+    isSuccess: false,
+    isErrored: false
+  }
+};
+
+type Actions = {
+  refreshAccessToken: () => void;
+};
+
+const UserStateContext = createContext<State | undefined>(undefined);
+const UserActionContext = createContext<Actions | undefined>(undefined);
+
+type ActionTypes =
+  | { type: "get_initial_user_data_init" }
+  | { type: "get_initial_user_data_success"; userData: UserData }
+  | { type: "get_initial_user_data_error" }
+  | { type: "refresh_access_token_init" }
+  | { type: "refresh_access_token_success"; token: string }
+  | { type: "refresh_access_token_error" };
+
+const reducer = (state: State, action: ActionTypes): State => {
+  switch (action.type) {
+    case "get_initial_user_data_init":
+      return {
+        ...state,
+        getInitialUserData: {
+          isLoading: true,
+          isSuccess: false,
+          isErrored: false
+        }
+      };
+    case "get_initial_user_data_success":
+      return {
+        ...state,
+        data: action.userData,
+        getInitialUserData: {
+          isLoading: false,
+          isSuccess: true,
+          isErrored: false
+        }
+      };
+    case "get_initial_user_data_error":
+      return {
+        ...state,
+        getInitialUserData: {
+          isLoading: false,
+          isSuccess: false,
+          isErrored: true
+        }
+      };
+    case "refresh_access_token_init":
+      return {
+        ...state,
+        getRefreshedAccessToken: {
+          isLoading: true,
+          isSuccess: false,
+          isErrored: false
+        }
+      };
+    case "refresh_access_token_success":
+      return {
+        ...state,
+        data: {
+          ...state.data,
+          token: action.token
+        },
+        getRefreshedAccessToken: {
+          isLoading: false,
+          isSuccess: true,
+          isErrored: false
+        }
+      };
+    case "refresh_access_token_error":
+      return {
+        ...state,
+        getRefreshedAccessToken: {
+          isLoading: false,
+          isSuccess: false,
+          isErrored: true
+        }
+      };
+    default:
+      throw new Error("Unsupported action");
+  }
+};
 
 const UserProvider: React.FC = ({ children }) => {
+  const [state, dispatch] = useReducer(reducer, initialState);
   const history = useHistory();
-  const [user, setUser] = useState<User>({});
+  const { getRefreshedAccessToken } = useHttpClient(state.data);
 
   useEffect(() => {
-    const token = Cookies.get("token");
-    const refreshToken = Cookies.get("refresh_token");
-    const userId = Cookies.get("user_id");
+    dispatch({ type: "get_initial_user_data_init" });
+  }, []);
 
-    if (!token || !refreshToken || !userId) {
-      history.push("/auth");
+  useEffect(() => {
+    if (state.getInitialUserData.isLoading) {
+      const token = Cookies.get("token");
+      const refreshToken = Cookies.get("refresh_token");
+      const userId = Cookies.get("user_id");
+
+      if (!token || !refreshToken || !userId) {
+        dispatch({
+          type: "get_initial_user_data_error"
+        });
+      } else {
+        dispatch({
+          type: "get_initial_user_data_success",
+          userData: {
+            token: token,
+            refreshToken: refreshToken,
+            userId: userId
+          }
+        });
+      }
     }
+  }, [state.getInitialUserData.isLoading]);
 
-    setUser({
-      token: token,
-      refreshToken: refreshToken,
-      userId: userId
-    });
-  }, [history]);
+  useEffect(() => {
+    if (state.getInitialUserData.isErrored) {
+      history.push("/auth");
+      // do we need to reset isErrored here?
+    }
+  }, [state.getInitialUserData.isErrored, history]);
+
+  useEffect(() => {
+    const refreshToken = async () => {
+      if (state.getRefreshedAccessToken.isLoading) {
+        try {
+          const token = await getRefreshedAccessToken();
+          dispatch({ type: "refresh_access_token_success", token });
+        } catch (e) {
+          dispatch({ type: "refresh_access_token_error" });
+        }
+      }
+    };
+
+    refreshToken();
+  }, [state.getRefreshedAccessToken.isLoading, getRefreshedAccessToken]);
+
+  useEffect(() => {
+    if (state.getRefreshedAccessToken.isErrored) {
+      console.log("Failed refreshing access token..");
+    }
+  }, [state.getRefreshedAccessToken.isErrored]);
+
+  const actions = useMemo(
+    () => ({
+      refreshAccessToken: () => {
+        dispatch({ type: "refresh_access_token_init" });
+      }
+    }),
+    []
+  );
 
   return (
-    <UserContext.Provider value={{ data: user }}>
-      {children}
-    </UserContext.Provider>
+    <UserStateContext.Provider value={state}>
+      <UserActionContext.Provider value={actions}>
+        {children}
+      </UserActionContext.Provider>
+    </UserStateContext.Provider>
   );
 };
 
-const useUser = () => {
-  const context = useContext(UserContext);
+const useUserState = () => {
+  const context = useContext(UserStateContext);
 
   if (!context) {
-    throw new Error("You must use UserProvider to use useUser");
+    throw new Error(
+      "Please wrap component in UserProvider to use useUserState"
+    );
+  }
+
+  return context;
+};
+
+const useUserActions = () => {
+  const context = useContext(UserActionContext);
+
+  if (!context) {
+    throw new Error(
+      "Please wrap component in UserProvider to use useUserActions"
+    );
   }
 
   return context;
@@ -56,4 +231,4 @@ UserProvider.propTypes = {
   children: PropTypes.node
 };
 
-export { UserProvider, useUser };
+export { UserProvider, useUserState, useUserActions };

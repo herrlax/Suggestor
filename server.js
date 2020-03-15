@@ -148,6 +148,7 @@ app.get("/refresh", (req, res) => {
     if (!error && response.statusCode === 200) {
       const access_token = body.access_token;
 
+      res.cookie("token", body.access_token);
       res.send({
         access_token
       });
