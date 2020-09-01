@@ -10,14 +10,14 @@ import * as Cookies from "es-cookie";
 import PropTypes from "prop-types";
 import { useHttpClient } from "../../utils/httpClient";
 
-type UserData = {
+export type UserData = {
   token?: string;
   refreshToken?: string;
   userId?: string;
 };
 
 type State = {
-  data: UserData;
+  data?: UserData;
   getInitialUserData: {
     isLoading: boolean;
     isSuccess: boolean;
@@ -31,7 +31,7 @@ type State = {
 };
 
 const initialState: State = {
-  data: {},
+  data: undefined,
   getInitialUserData: {
     isLoading: false,
     isSuccess: false,
@@ -45,6 +45,7 @@ const initialState: State = {
 };
 
 type Actions = {
+  logIn: () => void;
   refreshAccessToken: () => void;
 };
 
@@ -53,11 +54,12 @@ const UserActionContext = createContext<Actions | undefined>(undefined);
 
 type ActionTypes =
   | { type: "get_initial_user_data_init" }
-  | { type: "get_initial_user_data_success"; userData: UserData }
+  | { type: "get_initial_user_data_success"; userData?: UserData }
   | { type: "get_initial_user_data_error" }
+  | { type: "get_initial_user_data_reset_error" }
   | { type: "refresh_access_token_init" }
   | { type: "refresh_access_token_success"; token: string }
-  | { type: "refresh_access_token_error" };
+  | { type: "refresh_access_token_error" }
 
 const reducer = (state: State, action: ActionTypes): State => {
   switch (action.type) {
@@ -142,7 +144,8 @@ const UserProvider: React.FC = ({ children }) => {
 
       if (!token || !refreshToken || !userId) {
         dispatch({
-          type: "get_initial_user_data_error"
+          type: "get_initial_user_data_success",
+          userData: undefined
         });
       } else {
         dispatch({
@@ -157,12 +160,16 @@ const UserProvider: React.FC = ({ children }) => {
     }
   }, [state.getInitialUserData.isLoading]);
 
-  useEffect(() => {
-    if (state.getInitialUserData.isErrored) {
-      history.push("/auth");
-      // do we need to reset isErrored here?
-    }
-  }, [state.getInitialUserData.isErrored, history]);
+  // useEffect(() => {
+  //   if (state.getInitialUserData.isErrored) {
+  //     alert('getInitialUserData errored');
+
+  //     dispatch({
+  //       type: "get_initial_user_data_reset_error"
+  //     });
+  //     history.push("/auth");
+  //   }
+  // }, [state.getInitialUserData.isErrored, history]);
 
   useEffect(() => {
     const refreshToken = async () => {
@@ -189,9 +196,12 @@ const UserProvider: React.FC = ({ children }) => {
     () => ({
       refreshAccessToken: () => {
         dispatch({ type: "refresh_access_token_init" });
+      },
+      logIn: () => {
+        history.push('/auth')
       }
     }),
-    []
+    [history]
   );
 
   return (

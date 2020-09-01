@@ -1,3 +1,5 @@
+import { UserData } from "../context/user";
+
 const spotifyApi = "https://api.spotify.com/v1";
 
 export type Song = {
@@ -6,22 +8,14 @@ export type Song = {
   artists: string[];
 };
 
-export const useHttpClient = ({
-  token,
-  refreshToken,
-  userid
-}: {
-  token?: string;
-  refreshToken?: string;
-  userid?: string;
-}) => {
+export const useHttpClient = (user?: UserData) => {
   const fetchCurrentSong = async () => {
     const endpoint = `${spotifyApi}/me/player/currently-playing`;
 
     const res = await fetch(endpoint, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${user?.token}`
       }
     });
 
@@ -47,11 +41,14 @@ export const useHttpClient = ({
   };
 
   const getRefreshedAccessToken = async () => {
+    console.log('here');
+    console.log('user', user);
+    
     const res = await fetch("/refresh", {
       method: "GET",
       headers: {
-        refreshToken: refreshToken || "",
-        userid: userid || ""
+        refreshToken: user?.refreshToken || "",
+        userid: user?.userId || ""
       }
     });
 
