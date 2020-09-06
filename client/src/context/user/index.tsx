@@ -3,7 +3,7 @@ import React, {
   useEffect,
   useContext,
   useMemo,
-  useReducer
+  useReducer,
 } from "react";
 import { useHistory } from "react-router-dom";
 import * as Cookies from "es-cookie";
@@ -21,7 +21,6 @@ type State = {
   getInitialUserData: {
     isLoading: boolean;
     isSuccess: boolean;
-    isErrored: boolean;
   };
   getRefreshedAccessToken: {
     isLoading: boolean;
@@ -35,13 +34,12 @@ const initialState: State = {
   getInitialUserData: {
     isLoading: false,
     isSuccess: false,
-    isErrored: false
   },
   getRefreshedAccessToken: {
     isLoading: false,
     isSuccess: false,
-    isErrored: false
-  }
+    isErrored: false,
+  },
 };
 
 type Actions = {
@@ -59,7 +57,7 @@ type ActionTypes =
   | { type: "get_initial_user_data_reset_error" }
   | { type: "refresh_access_token_init" }
   | { type: "refresh_access_token_success"; token: string }
-  | { type: "refresh_access_token_error" }
+  | { type: "refresh_access_token_error" };
 
 const reducer = (state: State, action: ActionTypes): State => {
   switch (action.type) {
@@ -69,8 +67,7 @@ const reducer = (state: State, action: ActionTypes): State => {
         getInitialUserData: {
           isLoading: true,
           isSuccess: false,
-          isErrored: false
-        }
+        },
       };
     case "get_initial_user_data_success":
       return {
@@ -79,17 +76,7 @@ const reducer = (state: State, action: ActionTypes): State => {
         getInitialUserData: {
           isLoading: false,
           isSuccess: true,
-          isErrored: false
-        }
-      };
-    case "get_initial_user_data_error":
-      return {
-        ...state,
-        getInitialUserData: {
-          isLoading: false,
-          isSuccess: false,
-          isErrored: true
-        }
+        },
       };
     case "refresh_access_token_init":
       return {
@@ -97,21 +84,21 @@ const reducer = (state: State, action: ActionTypes): State => {
         getRefreshedAccessToken: {
           isLoading: true,
           isSuccess: false,
-          isErrored: false
-        }
+          isErrored: false,
+        },
       };
     case "refresh_access_token_success":
       return {
         ...state,
         data: {
           ...state.data,
-          token: action.token
+          token: action.token,
         },
         getRefreshedAccessToken: {
           isLoading: false,
           isSuccess: true,
-          isErrored: false
-        }
+          isErrored: false,
+        },
       };
     case "refresh_access_token_error":
       return {
@@ -119,8 +106,8 @@ const reducer = (state: State, action: ActionTypes): State => {
         getRefreshedAccessToken: {
           isLoading: false,
           isSuccess: false,
-          isErrored: true
-        }
+          isErrored: true,
+        },
       };
     default:
       throw new Error("Unsupported action");
@@ -145,7 +132,7 @@ const UserProvider: React.FC = ({ children }) => {
       if (!token || !refreshToken || !userId) {
         dispatch({
           type: "get_initial_user_data_success",
-          userData: undefined
+          userData: undefined,
         });
       } else {
         dispatch({
@@ -153,23 +140,12 @@ const UserProvider: React.FC = ({ children }) => {
           userData: {
             token: token,
             refreshToken: refreshToken,
-            userId: userId
-          }
+            userId: userId,
+          },
         });
       }
     }
   }, [state.getInitialUserData.isLoading]);
-
-  // useEffect(() => {
-  //   if (state.getInitialUserData.isErrored) {
-  //     alert('getInitialUserData errored');
-
-  //     dispatch({
-  //       type: "get_initial_user_data_reset_error"
-  //     });
-  //     history.push("/auth");
-  //   }
-  // }, [state.getInitialUserData.isErrored, history]);
 
   useEffect(() => {
     const refreshToken = async () => {
@@ -198,8 +174,8 @@ const UserProvider: React.FC = ({ children }) => {
         dispatch({ type: "refresh_access_token_init" });
       },
       logIn: () => {
-        history.push('/auth')
-      }
+        history.push("/auth");
+      },
     }),
     [history]
   );
@@ -238,7 +214,7 @@ const useUserActions = () => {
 };
 
 UserProvider.propTypes = {
-  children: PropTypes.node
+  children: PropTypes.node,
 };
 
 export { UserProvider, useUserState, useUserActions };
