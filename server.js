@@ -15,12 +15,30 @@ const client_id = process.env.CLIENT_ID;
 const client_secret = process.env.CLIENT_SECRET;
 const redirect_uri = process.env.REDIRECT_URI;
 
+if (!client_id) {
+  throw new Error(
+    "No CLIENT_ID found. Please specify CLIENT_ID in your local .env file"
+  );
+}
+
+if (!client_secret) {
+  throw new Error(
+    "No CLIENT_SECRET found. Please specify CLIENT_SECRET in your local .env file"
+  );
+}
+
+if (!redirect_uri) {
+  throw new Error(
+    "No REDIRECT_URI found. Please specify REDIRECT_URI in your local .env file"
+  );
+}
+
 /**
  * Generates a random string containing numbers and letters
  * @param  {number} length The length of the string
  * @return {string} The generated string
  */
-const generateRandomString = length => {
+const generateRandomString = (length) => {
   let text = "";
   const possible =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -52,7 +70,7 @@ app.get("/auth", (req, res) => {
     client_id: client_id,
     scope: scope,
     redirect_uri: redirect_uri,
-    state: state
+    state: state,
   });
 
   return res.redirect("https://accounts.spotify.com/authorize?" + params);
@@ -67,7 +85,7 @@ app.get("/callback", (req, res) => {
     res.redirect(
       "/#" +
         querystring.stringify({
-          error: "state_mismatch"
+          error: "state_mismatch",
         })
     );
   } else {
@@ -77,17 +95,17 @@ app.get("/callback", (req, res) => {
       form: {
         code: code,
         redirect_uri: redirect_uri,
-        grant_type: "authorization_code"
+        grant_type: "authorization_code",
       },
       headers: {
         Authorization:
           "Basic " +
-          new Buffer.from(`${client_id}:${client_secret}`).toString("base64")
+          new Buffer.from(`${client_id}:${client_secret}`).toString("base64"),
       },
-      json: true
+      json: true,
     };
 
-    request.post(authOptions, function(error, response, body) {
+    request.post(authOptions, function (error, response, body) {
       if (!error && response.statusCode === 200) {
         res.cookie("token", body.access_token);
         res.cookie("refresh_token", body.refresh_token);
@@ -95,10 +113,10 @@ app.get("/callback", (req, res) => {
         const options = {
           url: "https://api.spotify.com/v1/me",
           headers: { Authorization: "Bearer " + body.access_token },
-          json: true
+          json: true,
         };
 
-        request.get(options, function(error, response, body) {
+        request.get(options, function (error, response, body) {
           res.cookie("user_id", body.id);
           res.redirect("/#");
         });
@@ -106,7 +124,7 @@ app.get("/callback", (req, res) => {
         res.redirect(
           "/#" +
             querystring.stringify({
-              error: "invalid_token"
+              error: "invalid_token",
             })
         );
       }
@@ -134,29 +152,29 @@ app.get("/refresh", (req, res) => {
     url: "https://accounts.spotify.com/api/token",
     form: {
       grant_type: "refresh_token",
-      refresh_token: refreshToken
+      refresh_token: refreshToken,
     },
     headers: {
       Authorization:
         "Basic " +
-        new Buffer.from(`${client_id}:${client_secret}`).toString("base64")
+        new Buffer.from(`${client_id}:${client_secret}`).toString("base64"),
     },
-    json: true
+    json: true,
   };
 
-  request.post(authOptions, function(error, response, body) {
+  request.post(authOptions, function (error, response, body) {
     if (!error && response.statusCode === 200) {
       const access_token = body.access_token;
 
       res.cookie("token", body.access_token);
       res.send({
-        access_token
+        access_token,
       });
     } else {
       res.redirect(
         "/#" +
           querystring.stringify({
-            error: "invalid_token"
+            error: "invalid_token",
           })
       );
     }
@@ -200,19 +218,19 @@ app.get("/playlists", (req, res) => {
   const opts = {
     url: "https://api.spotify.com/v1/me/playlists",
     headers: { Authorization: "Bearer " + access_token },
-    json: true
+    json: true,
   };
 
-  request.get(opts, function(error, response, body) {
+  request.get(opts, function (error, response, body) {
     // Filters out all playlist that is not user made (i.e that the user can't add to)
     const playlists = body.items.filter(
-      p => p.owner.id == req.headers.userid && p.tracks.total > 0
+      (p) => p.owner.id == req.headers.userid && p.tracks.total > 0
     );
 
     let valueLists = [];
 
     // Calculates average track values for each playlist
-    const ps = playlists.map(playlist => {
+    const ps = playlists.map((playlist) => {
       return new Promise((resolve, reject) => {
         // Calculating needed sample size for the given population size
         // for a 95% confidence level with 5% margin of error
@@ -247,17 +265,17 @@ app.get("/playlists", (req, res) => {
               sampleSize
           ),
           headers: { Authorization: "Bearer " + access_token },
-          json: true
+          json: true,
         };
 
-        request.get(opts3, function(error, response, body) {
+        request.get(opts3, function (error, response, body) {
           if (body.items == null || body.items == undefined) {
             console.log("no items found in playlist..");
             return null;
           }
 
           // Creates array of only ids for all tracks
-          const tIds = body.items.map(i => {
+          const tIds = body.items.map((i) => {
             return i.track.id;
           });
 
@@ -267,10 +285,10 @@ app.get("/playlists", (req, res) => {
               "?ids=" + encodeURIComponent(tIds.join(","))
             ),
             headers: { Authorization: "Bearer " + access_token },
-            json: true
+            json: true,
           };
 
-          request.get(opts2, function(error, response, body) {
+          request.get(opts2, function (error, response, body) {
             let avrDanceability = 0,
               avrEnergy = 0,
               avrLoudness = 0,
@@ -286,7 +304,7 @@ app.get("/playlists", (req, res) => {
 
               if (values != null) {
                 // Sums all average attributes
-                values.forEach(v => {
+                values.forEach((v) => {
                   if (v != null) {
                     avrDanceability += v.danceability;
                     avrEnergy += v.energy;
@@ -327,20 +345,20 @@ app.get("/playlists", (req, res) => {
               instrumentalness: avrInstrumentalness,
               liveness: avrLiveness,
               // tempo: avrTempo,
-              valence: avrValence
+              valence: avrValence,
             });
 
             resolve();
           });
         });
-      }).then(function(val) {
+      }).then(function (val) {
         return val;
       });
     });
 
     Promise.all(ps).then(
-      function(values) {
-        const matches = valueLists.map(p => {
+      function (values) {
+        const matches = valueLists.map((p) => {
           p.value =
             Math.abs(danceability - p.danceability) +
             Math.abs(energy - p.energy) +
