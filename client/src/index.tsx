@@ -9,10 +9,7 @@ import { SongProvider, SongHandler } from "./context/song";
 ReactDOM.render(
   <BrowserRouter forceRefresh={true}>
     <UserProvider>
-      {/* <SongProvider> */}
         <App />
-        {/* <SongHandler /> */}
-      {/* </SongProvider> */}
     </UserProvider>
   </BrowserRouter>,
   document.getElementById("root")
