@@ -164,7 +164,7 @@ const UserProvider: React.FC = ({ children }) => {
 
   useEffect(() => {
     if (state.getRefreshedAccessToken.isErrored) {
-      console.log("Failed refreshing access token..");
+      console.error("Failed refreshing access token..");
     }
   }, [state.getRefreshedAccessToken.isErrored]);
 

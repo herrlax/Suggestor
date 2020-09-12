@@ -41,9 +41,6 @@ export const useHttpClient = (user?: UserData) => {
   };
 
   const getRefreshedAccessToken = async () => {
-    console.log('here');
-    console.log('user', user);
-    
     const res = await fetch("/refresh", {
       method: "GET",
       headers: {
