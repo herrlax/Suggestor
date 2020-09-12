@@ -22,7 +22,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "lint": "eslint src --ext .ts,.tsx,.js,.jsx"
+    "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
+    "build:watch": "yarn watch 'yarn build' src/"
   },
   "eslintConfig": {
     "extends": "react-app"
