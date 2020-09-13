@@ -1,7 +1,7 @@
 import * as Cookies from "es-cookie";
 import fetchMock from "fetch-mock";
 
-const clearTokens = () => {
+const clearCookies = () => {
   Cookies.remove("token");
   Cookies.remove("refresh_token");
   Cookies.remove("user_id");
@@ -17,7 +17,7 @@ if (process.env.REACT_APP_MOCK_ENABLED) {
     refreshToken !== "MOCK_REFRESH_TOKEN" ||
     userId !== "MOCK_USER_ID"
   ) {
-    clearTokens();
+    clearCookies();
   }
 
   (window as any).fetch = require("fetch-mock");
@@ -29,16 +29,16 @@ if (process.env.REACT_APP_MOCK_ENABLED) {
       artists: ["Frank Sinatra"],
     },
   });
-} else {  
+} else {
   if (
     token === "MOCK_TOKEN" ||
     token === "NEW_MOCK_TOKEN" ||
     refreshToken === "MOCK_REFRESH_TOKEN" ||
     userId === "MOCK_USER_ID"
   ) {
-    console.log('calling it!');
-    
-    clearTokens();
+    console.log("calling it!");
+
+    clearCookies();
   }
 }
 
