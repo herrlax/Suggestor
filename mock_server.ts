@@ -16,7 +16,7 @@ app.get("/auth", (req, res) => {
   res.cookie("token", "MOCK_TOKEN");
   res.cookie("refresh_token", "MOCK_REFRESH_TOKEN");
   res.cookie("user_id", "MOCK_USER_ID");
-  res.redirect("/home");
+  res.redirect("/#");
 });
 
 app.get("/refresh", (req, res) => {

@@ -1,15 +1,16 @@
 import React from "react";
 import { useSongState } from "./context/song";
 import { useUserState, useUserActions } from "./context/user";
+import NowPlaying from "./components/NowPlaying";
 
 const App = () => {
-  const { data } = useUserState();
+  const { data: userData } = useUserState();
   const { logIn } = useUserActions();
 
-  return typeof data === "undefined" ? (
+  return typeof userData === "undefined" ? (
     <button onClick={logIn}>Login</button>
   ) : (
-    <span>You're logged in</span>
+    <NowPlaying />
   );
 };
 
