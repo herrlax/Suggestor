@@ -1,10 +1,6 @@
-require("dotenv").config();
 const express = require("express");
 const path = require("path");
-const request = require("request");
-const querystring = require("querystring");
 const cookieParser = require("cookie-parser");
-const url = require("url");
 
 const app = new express();
 

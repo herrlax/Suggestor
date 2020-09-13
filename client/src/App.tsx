@@ -1,5 +1,5 @@
+import "./utils/mock.ts"
 import React from "react";
-import { useSongState } from "./context/song";
 import { useUserState, useUserActions } from "./context/user";
 import NowPlaying from "./components/NowPlaying";
 
