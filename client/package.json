@@ -7,10 +7,10 @@
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
     "@types/jest": "^24.0.0",
-    "@types/node": "^12.0.0",
     "@types/react": "^16.9.0",
     "@types/react-dom": "^16.9.0",
     "es-cookie": "^1.3.2",
+    "fetch-mock": "^9.10.7",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
     "react-router-dom": "^5.1.2",
@@ -20,10 +20,12 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build:mock": "REACT_APP_MOCK_ENABLED=true react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
-    "build:watch": "yarn watch 'yarn build' src/"
+    "build:watch": "yarn watch 'yarn build' src/",
+    "build:watch-mock": "REACT_APP_MOCK_ENABLED=true yarn watch 'yarn build' src/"
   },
   "eslintConfig": {
     "extends": "react-app"
