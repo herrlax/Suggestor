@@ -18,7 +18,7 @@ The React frontend can be found in `./client` and can be started locally for dev
 ## Running the project w/ server 🏃‍♂️
 
 Run with mocked server and fetch: 
--  In `./client`, build the frontend with `REACT_APP_MOCK_ENABLED=true` to enable mocked fetch response: `yarn build:mock` (or `build:watch-dev` for watch mode). The FE is now built in `./client/build`.
+-  In `./client`, build the frontend with `REACT_APP_MOCK_ENABLED=true` to enable mocked fetch response: `yarn build:mock` (or `build:watch-mock` for watch mode). The FE is now built in `./client/build`.
 - In root, run `yarn start:mock`. The node server now runs at `localhost:8888` 
 
 Running without mocked server and fetch:
