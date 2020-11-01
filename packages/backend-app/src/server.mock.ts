@@ -5,9 +5,6 @@ import cookieParser from "cookie-parser";
 const app = express();
 const cwd = process.cwd();
 
-console.log("cwd", cwd);
-console.log("__dirname", __dirname);
-
 // mark client/build as a static assets directory
 app.use(express.static(path.resolve(cwd) + "/build/client"));
 

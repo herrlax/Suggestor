@@ -5,7 +5,6 @@
 
 import axios from "axios";
 import express from "express";
-// const express = require("express");
 import path from "path";
 /**
  * @TODO Replace all use of request with axios as request is depricated
@@ -14,7 +13,6 @@ import request from "request";
 
 import querystring from "querystring";
 import cookieParser from "cookie-parser";
-import url from "url";
 
 import dotenv from "dotenv";
 
@@ -59,8 +57,11 @@ const applicationScope =
   "playlist-modify-public playlist-modify-private playlist-read-private user-read-private user-read-currently-playing user-read-playback-state";
 
 const app = express();
+const cwd = process.cwd();
 
-app.use(express.static(path.join(__dirname, "client/build"))).use(cookieParser());
+// mark client/build as a static assets directory
+app.use(express.static(path.resolve(cwd) + "/build/client"));
+app.use(cookieParser());
 
 app.get("/auth", (req: any, res: any) => {
   const state = generateRandomString(16);
@@ -93,40 +94,49 @@ app.get("/callback", async (req: any, res: any) => {
   res.clearCookie(stateKey);
 
   const authOptions = {
-    form: {
-      code,
-      redirect_uri: redirectUri,
-      grant_type: "authorization_code"
-    },
+    code,
+    redirect_uri: redirectUri,
+    grant_type: "authorization_code"
+  };
+  const headerData = {
     headers: {
-      Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`
-    },
-    json: true
+      Accept: "application/json",
+      Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
+      "Content-Type": "application/x-www-form-urlencoded"
+    }
   };
 
   try {
-    const response = await axios.post(`${accountApiHost}/api/token`, authOptions);
+    const response = await axios.post(`${accountApiHost}/api/token`, querystring.stringify(authOptions), headerData);
+    const { status, data } = response;
 
-    console.log("response!!!!", response);
+    if (status === 200) {
+      res.cookie("token", data.access_token);
+      res.cookie("refresh_token", data.refresh_token);
 
-    if (response.status === 200) {
-      // all good
+      const response = await axios.get(`${accountApiHost}/v1/me`, {
+        headers: { Authorization: "Bearer " + data.access_token }
+      });
+
+      res.cookie("user_id", response.data.id);
+      res.redirect("/#");
     }
   } catch (e) {
-    console.log("caught here..");
-
+    console.error(e.message);
     // do nothing
   }
 
   // request.post(authOptions, function (error, response, body) {
   //   if (!error && response.statusCode === 200) {
+  //     console.log("GOT HERE YAY!");
+
   //     res.cookie("token", body.access_token);
   //     res.cookie("refresh_token", body.refresh_token);
 
   //     const options = {
-  //       url: `${web_api_host}/v1/me`,
+  //       url: `${accountApiHost}/v1/me`,
   //       headers: { Authorization: "Bearer " + body.access_token },
-  //       json: true,
+  //       json: true
   //     };
 
   //     request.get(options, function (error, response, body) {
@@ -137,7 +147,7 @@ app.get("/callback", async (req: any, res: any) => {
   //     res.redirect(
   //       "/#" +
   //         querystring.stringify({
-  //           error: "invalid_token",
+  //           error: "invalid_token"
   //         })
   //     );
   //   }
@@ -415,7 +425,7 @@ app.get("/playlists", async (req, res) => {
 });
 
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../client/build/index.html"));
+  res.sendFile(path.resolve(cwd) + "/build/client/index.html");
 });
 
 console.log("Listening on 8888");
