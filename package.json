@@ -1,22 +1,7 @@
 {
   "name": "suggestor",
-  "version": "0.1.0",
-  "dependencies": {
-    "cookie-parser": "^1.4.4",
-    "dotenv": "^8.2.0",
-    "express": "^4.17.1",
-    "querystring": "^0.2.0",
-    "request": "^2.88.2"
-  },
-  "scripts": {
-    "start": "node server.js",
-    "start:mock": "node mock_server.ts"
-  },
-  "description": "Based on the what you are listening to right now, Propser will suggests what playlist to add that song to.",
-  "main": "server.js",
-  "author": "Mikael Malmqvist",
-  "license": "ISC",
-  "devDependencies": {
-    "@types/node": "^14.10.1"
-  }
+  "workspaces": [
+    "packages/*"
+  ],
+  "private": true
 }

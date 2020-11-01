@@ -1,12 +1,17 @@
-const express = require("express");
-const path = require("path");
-const cookieParser = require("cookie-parser");
+import express from "express";
+import path from "path";
+import cookieParser from "cookie-parser";
 
-const app = new express();
+const app = express();
+const cwd = process.cwd();
 
-app
-  .use(express.static(path.join(__dirname, "client/build")))
-  .use(cookieParser());
+console.log("cwd", cwd);
+console.log("__dirname", __dirname);
+
+// mark client/build as a static assets directory
+app.use(express.static(path.resolve(cwd) + "/build/client"));
+
+app.use(cookieParser());
 
 app.get("/auth", (req, res) => {
   res.cookie("token", "MOCK_TOKEN");
@@ -15,14 +20,12 @@ app.get("/auth", (req, res) => {
   res.redirect("/");
 });
 
-app.get("/refresh", (req, res) => {
-  let refreshToken = "";
-
-  if (req.headers) {
-    refreshToken = req.headers.refreshtoken;
-  } else {
+app.get("/refresh", (req: any, res: any) => {
+  if (typeof req.headers === "undefined") {
     throw new Error("Request is missing header");
   }
+
+  const { refreshToken } = req.headers.refreshtoken;
 
   if (typeof refreshToken === "undefined" || refreshToken === "") {
     throw new Error("Undefined refresh token");
@@ -31,12 +34,12 @@ app.get("/refresh", (req, res) => {
   res.cookie("token", "NEW_MOCK_TOKEN");
 
   res.send({
-    access_token: "NEW_MOCK_TOKEN",
+    access_token: "NEW_MOCK_TOKEN"
   });
 });
 
 // Returns the top 3 playlists matching the playing song
-app.get("/playlists", (req, res) => {
+app.get("/playlists", (req: any, res: any) => {
   if (typeof req.header === "undefined" || req.header === {}) {
     throw new Error("Request is missing header");
   }
@@ -51,7 +54,7 @@ app.get("/playlists", (req, res) => {
     loudness,
     liveness,
     valence,
-    tempo,
+    tempo
   } = req.header;
 
   if (typeof access_token === "undefined" || access_token == "") {
@@ -62,7 +65,7 @@ app.get("/playlists", (req, res) => {
 });
 
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "client/build/index.html"));
+  res.sendFile(path.resolve(cwd) + "/build/client/index.html");
 });
 
 console.log("Listening on 8888");
