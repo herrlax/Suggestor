@@ -1,0 +1,39 @@
+{
+  "name": "@suggestor/backend-app",
+  "main": "../build/backend/index.js",
+  "description": "Based on the what you are listening to right now, Propser will suggests what playlist to add that song to.",
+  "version": "0.1.0",
+  "private": true,
+  "author": "Mikael Malmqvist",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.20.0",
+    "cookie-parser": "^1.4.4",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "querystring": "^0.2.0",
+    "request": "^2.88.2"
+  },
+  "scripts": {
+    "start": "ts-node src/server.ts",
+    "start:mock": "ts-node src/server.mock.ts",
+    "build": "tsc --project ./tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/cookie-parser": "^1.4.2",
+    "@types/dotenv": "^8.2.0",
+    "@types/express": "^4.17.8",
+    "@types/node": "^14.10.1",
+    "@types/request": "^2.48.5",
+    "@typescript-eslint/eslint-plugin": "^4.6.0",
+    "@typescript-eslint/parser": "^4.6.0",
+    "eslint": "^7.12.1",
+    "eslint-config-prettier": "^6.15.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-prettier": "^3.1.4",
+    "prettier": "^2.1.2",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.5"
+  }
+}

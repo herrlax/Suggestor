@@ -1,11 +1,4 @@
-import React, {
-  useMemo,
-  useReducer,
-  useEffect,
-  useContext,
-  useCallback
-} from "react";
-import PropTypes from "prop-types";
+import React, { useMemo, useReducer, useEffect, useContext, useRef } from "react";
 import { useHttpClient, Song } from "../../utils/httpClient";
 import { useUserState, useUserActions } from "../user";
 
@@ -70,7 +63,7 @@ const reducer = (state: State, action: ActionTypes): State => {
       };
     case "get_current_song_success":
       return {
-        currentSong: action.song,
+        currentSong: action.song.id ? action.song : undefined,
         getCurrentSong: {
           isLoading: false,
           isSuccess: true,
@@ -95,26 +88,23 @@ const SongProvider: React.FC = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { data: userData } = useUserState();
   const { refreshAccessToken } = useUserActions();
-  const { fetchCurrentSong } = useHttpClient(userData);
-
-  console.log("currentSong: ", state.currentSong);
+  const { fetchCurrentSong, fetchPlaylists } = useHttpClient(userData);
 
   useEffect(() => {
     const getSong = async () => {
       if (state.getCurrentSong.isLoading) {
-        console.log("Inside getSong");
-
         try {
-          console.log("fetching..");
           const song = await fetchCurrentSong();
-          console.log("current song is:", song);
-
           dispatch({ type: "get_current_song_success", song });
+          // eslint-disable-next-line no-console
+          console.log("success!", song);
+
+          if (song.id) {
+            await fetchPlaylists(song.id);
+          }
         } catch (e) {
-          console.log("e", e);
           if (e.status === 401) {
             // The access token expired
-            console.log("refresh plx");
             dispatch({ type: "get_current_song_error" });
           }
         }
@@ -122,13 +112,13 @@ const SongProvider: React.FC = ({ children }) => {
     };
 
     getSong();
-  }, [state.getCurrentSong.isLoading, fetchCurrentSong]);
+  }, [state.getCurrentSong.isLoading, fetchCurrentSong, fetchPlaylists]);
 
   useEffect(() => {
     if (state.getCurrentSong.isErrored) {
       refreshAccessToken();
     }
-  }, [state.getCurrentSong.isErrored]);
+  }, [refreshAccessToken, state.getCurrentSong.isErrored]);
 
   const actions = useMemo(() => {
     return {
@@ -140,41 +130,16 @@ const SongProvider: React.FC = ({ children }) => {
 
   return (
     <SongActionContext.Provider value={actions}>
-      <SongStateContext.Provider value={state}>
-        {children}
-      </SongStateContext.Provider>
+      <SongStateContext.Provider value={state}>{children}</SongStateContext.Provider>
     </SongActionContext.Provider>
   );
-};
-
-SongProvider.propTypes = {
-  children: PropTypes.node
-};
-
-const SongHandler = () => {
-  const { getInitialUserData } = useUserState();
-  const { getCurrentSong } = useSongActions();
-
-  useEffect(() => {
-    if (getInitialUserData.isSuccess) {
-      console.log("starting interval");
-      getCurrentSong();
-      const interval = setInterval(getCurrentSong, 10000);
-
-      return () => clearInterval(interval);
-    }
-  }, [getCurrentSong, getInitialUserData.isSuccess]);
-
-  return null;
 };
 
 const useSongActions = () => {
   const context = useContext(SongActionContext);
 
   if (!context) {
-    throw new Error(
-      "Please wrap component in SongProvider to use useSongAction"
-    );
+    throw new Error("Please wrap component in SongProvider to use useSongAction");
   }
 
   return context;
@@ -184,12 +149,35 @@ const useSongState = () => {
   const context = useContext(SongStateContext);
 
   if (!context) {
-    throw new Error(
-      "Please wrap component in SongProvider to use useSongState"
-    );
+    throw new Error("Please wrap component in SongProvider to use useSongState");
   }
 
   return context;
+};
+
+const SongHandler = () => {
+  const intervalStarted = useRef(false);
+  const { data: userData } = useUserState();
+  const { getCurrentSong } = useSongActions();
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined;
+
+    if (userData && !intervalStarted.current) {
+      getCurrentSong();
+
+      interval = setInterval(getCurrentSong, 60000);
+      intervalStarted.current = true;
+    }
+
+    return () => {
+      if (typeof interval !== "undefined") {
+        clearInterval(interval);
+      }
+    };
+  }, [getCurrentSong, userData]);
+
+  return null;
 };
 
 export { SongProvider, SongHandler, useSongActions, useSongState };

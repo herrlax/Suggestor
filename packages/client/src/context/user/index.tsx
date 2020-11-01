@@ -1,13 +1,7 @@
-import React, {
-  createContext,
-  useEffect,
-  useContext,
-  useMemo,
-  useReducer,
-} from "react";
+import React, { createContext, useEffect, useContext, useMemo, useReducer } from "react";
 import { useHistory } from "react-router-dom";
 import * as Cookies from "es-cookie";
-import PropTypes from "prop-types";
+// import PropTypes from "prop-types";
 import { useHttpClient } from "../../utils/httpClient";
 
 export type UserData = {
@@ -33,13 +27,13 @@ const initialState: State = {
   data: undefined,
   getInitialUserData: {
     isLoading: false,
-    isSuccess: false,
+    isSuccess: false
   },
   getRefreshedAccessToken: {
     isLoading: false,
     isSuccess: false,
-    isErrored: false,
-  },
+    isErrored: false
+  }
 };
 
 type Actions = {
@@ -66,8 +60,8 @@ const reducer = (state: State, action: ActionTypes): State => {
         ...state,
         getInitialUserData: {
           isLoading: true,
-          isSuccess: false,
-        },
+          isSuccess: false
+        }
       };
     case "get_initial_user_data_success":
       return {
@@ -75,8 +69,8 @@ const reducer = (state: State, action: ActionTypes): State => {
         data: action.userData,
         getInitialUserData: {
           isLoading: false,
-          isSuccess: true,
-        },
+          isSuccess: true
+        }
       };
     case "refresh_access_token_init":
       return {
@@ -84,21 +78,21 @@ const reducer = (state: State, action: ActionTypes): State => {
         getRefreshedAccessToken: {
           isLoading: true,
           isSuccess: false,
-          isErrored: false,
-        },
+          isErrored: false
+        }
       };
     case "refresh_access_token_success":
       return {
         ...state,
         data: {
           ...state.data,
-          token: action.token,
+          token: action.token
         },
         getRefreshedAccessToken: {
           isLoading: false,
           isSuccess: true,
-          isErrored: false,
-        },
+          isErrored: false
+        }
       };
     case "refresh_access_token_error":
       return {
@@ -106,8 +100,8 @@ const reducer = (state: State, action: ActionTypes): State => {
         getRefreshedAccessToken: {
           isLoading: false,
           isSuccess: false,
-          isErrored: true,
-        },
+          isErrored: true
+        }
       };
     default:
       throw new Error("Unsupported action");
@@ -132,16 +126,16 @@ const UserProvider: React.FC = ({ children }) => {
       if (!token || !refreshToken || !userId) {
         dispatch({
           type: "get_initial_user_data_success",
-          userData: undefined,
+          userData: undefined
         });
       } else {
         dispatch({
           type: "get_initial_user_data_success",
           userData: {
-            token: token,
-            refreshToken: refreshToken,
-            userId: userId,
-          },
+            token,
+            refreshToken,
+            userId
+          }
         });
       }
     }
@@ -175,16 +169,14 @@ const UserProvider: React.FC = ({ children }) => {
       },
       logIn: () => {
         history.push("/auth");
-      },
+      }
     }),
     [history]
   );
 
   return (
     <UserStateContext.Provider value={state}>
-      <UserActionContext.Provider value={actions}>
-        {children}
-      </UserActionContext.Provider>
+      <UserActionContext.Provider value={actions}>{children}</UserActionContext.Provider>
     </UserStateContext.Provider>
   );
 };
@@ -193,9 +185,7 @@ const useUserState = () => {
   const context = useContext(UserStateContext);
 
   if (!context) {
-    throw new Error(
-      "Please wrap component in UserProvider to use useUserState"
-    );
+    throw new Error("Please wrap component in UserProvider to use useUserState");
   }
 
   return context;
@@ -205,16 +195,14 @@ const useUserActions = () => {
   const context = useContext(UserActionContext);
 
   if (!context) {
-    throw new Error(
-      "Please wrap component in UserProvider to use useUserActions"
-    );
+    throw new Error("Please wrap component in UserProvider to use useUserActions");
   }
 
   return context;
 };
 
-UserProvider.propTypes = {
-  children: PropTypes.node,
-};
+// UserProvider.propTypes = {
+//   children: PropTypes.node,
+// };
 
 export { UserProvider, useUserState, useUserActions };

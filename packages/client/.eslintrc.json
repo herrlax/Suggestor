@@ -1,22 +1,7 @@
 {
-  "env": {
-    "browser": true,
-    "es6": true,
-    "node": true
-  },
-  "extends": [
-    "airbnb",
-    "airbnb/hooks",
-    "plugin:@typescript-eslint/recommended",
-    "prettier",
-    "prettier/react",
-    "prettier/@typescript-eslint"
-  ],
-  "globals": {
-    "Atomics": "readonly",
-    "SharedArrayBuffer": "readonly"
-  },
   "parser": "@typescript-eslint/parser",
+  "extends": ["airbnb", "airbnb/hooks", "plugin:@typescript-eslint/recommended", "prettier/react", "prettier/@typescript-eslint", "plugin:prettier/recommended"],
+  "plugins": ["@typescript-eslint", "prettier", "react-hooks"],
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true
@@ -24,7 +9,6 @@
     "ecmaVersion": 2018,
     "sourceType": "module"
   },
-  "plugins": ["@typescript-eslint", "prettier", "react-hooks"],
   "rules": {
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
@@ -37,19 +21,18 @@
     "import/no-unresolved": "off",
 
     "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-use-before-define": ["error"],
+    
+    "no-use-before-define": "off",
 
     "prettier/prettier": [
       "error",
       {
-          "trailingComma": "none",
-          "tabWidth": 2,
-          "printWidth": 120
+        "trailingComma": "none",
+        "tabWidth": 2,
+        "printWidth": 120
       }
-  ]
-  },
-  "overrides": [
-    {
-      "files": ["**/*.ts?(x)"]
-    }
-  ]
+    ]
+  }
 }

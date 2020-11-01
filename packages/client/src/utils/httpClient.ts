@@ -40,6 +40,30 @@ export const useHttpClient = (user?: UserData) => {
     };
   };
 
+  const fetchPlaylists = async (songId: string) => {
+    if (typeof user === "undefined") {
+      throw new Error("User undefined");
+    }
+
+    if (!user.token) {
+      throw new Error("Missing access token");
+    }
+
+    console.log("songId", songId);
+
+    const res = await fetch("/playlists", {
+      headers: {
+        song: songId,
+        token: user.token
+      }
+    });
+
+    const resJson = await res.json();
+
+    // eslint-disable-next-line no-console
+    console.log("resJson", resJson);
+  };
+
   const getRefreshedAccessToken = async () => {
     const res = await fetch("/refresh", {
       method: "GET",
@@ -50,8 +74,9 @@ export const useHttpClient = (user?: UserData) => {
     });
 
     const resJson = await res.json();
-    return await resJson.access_token;
+
+    return resJson.access_token;
   };
 
-  return { fetchCurrentSong, getRefreshedAccessToken };
+  return { fetchCurrentSong, fetchPlaylists, getRefreshedAccessToken };
 };
